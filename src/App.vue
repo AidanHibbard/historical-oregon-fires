@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { Card, Select, Menubar } from 'primevue'
+import { Card, Select, Menubar, InputText } from 'primevue'
 import * as d3 from 'd3'
 import * as topojson from 'topojson-client'
 
@@ -10,6 +10,7 @@ const yearOptions = Array.from({ length: 2024 - 1984 + 1 }, (_, i) => ({
   value: 1984 + i,
 }))
 const selectedYear = ref<number>(2024)
+const query = ref('')
 
 // -- Fire metadata ----------------------------------
 const fireCount = ref(0)
@@ -91,7 +92,7 @@ watch(
 
     zoomGroup.selectAll<SVGGElement, unknown>('.fire-layer').remove()
 
-    const url = `/json/fires/us_fires_${yr.label ?? '2024'}.topojson`
+    const url = `/historical-oregon-fires/json/fires/us_fires_${yr.label}.topojson`
     let topo
     try {
       topo = await fetch(url).then((r) => r.json())
@@ -100,7 +101,9 @@ watch(
       return
     }
 
-    const fires = topojson.feature(topo, topo.objects[`us_fires_${yr.label ?? '2024'}`])
+    const fires = topojson.feature(topo, topo.objects[`us_fires_${yr.label}`])
+
+    console.log(fires)
 
     fireCount.value = fires.features.length
     totalAcres.value = fires.features.reduce(
@@ -142,11 +145,13 @@ watch(
         <span class="text-xl font-semibold px-4">Wildfire Map</span>
       </template>
       <template #end>
+        <InputText v-model="query" placeholder="Find fire" />
         <Select
           v-model="selectedYear"
           :options="yearOptions"
           optionLabel="label"
           class="w-32 mx-4"
+          placeholder="select year"
         />
       </template>
     </Menubar>
@@ -169,6 +174,7 @@ watch(
         <div class="w-64 bg-neutral-100 dark:bg-neutral-900 rounded-lg shadow p-4 text-sm">
           <p class="text-md">Total Fires: {{ fireCount }}</p>
           <p class="text-md">Total Acres Burned: {{ totalAcres.toLocaleString() }}</p>
+          <hr />
         </div>
       </div>
     </main>
