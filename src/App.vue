@@ -103,7 +103,10 @@ watch(
     const fires = topojson.feature(topo, topo.objects[`us_fires_${yr.label ?? '2024'}`])
 
     fireCount.value = fires.features.length
-    totalAcres.value = fires.features.reduce((sum, feat) => sum + (feat.properties?.acres ?? 0), 0)
+    totalAcres.value = fires.features.reduce(
+      (sum, feat) => sum + (feat.properties?.BurnBndAc ?? 0),
+      0,
+    )
 
     const fireLayer = zoomGroup.append('g').attr('class', 'fire-layer')
 
