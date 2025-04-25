@@ -11,12 +11,15 @@ const yearOptions = Array.from({ length: 2024 - 1984 + 1 }, (_, i) => ({
 }))
 const selectedYear = ref<number>(2024)
 
+// -- Fire metadata ----------------------------------
+const fireCount = ref(0)
+const totalAcres = ref(0)
+
 // -- SVG ref & common vars --------------------------
 const svgRef = ref<SVGSVGElement | null>(null)
 const WIDTH = 975
 const HEIGHT = 610
 
-// these will be initialized in onMounted
 let projection: d3.GeoProjection
 let pathGen: d3.GeoPath<any, d3.GeoPermissibleObjects>
 let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>
@@ -31,7 +34,6 @@ onMounted(async () => {
     .attr('height', '100%')
     .style('background', '#18181b')
 
-  // group for zoomable content
   zoomGroup = svg.append('g').attr('class', 'zoom-group')
 
   const us = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json').then((r) =>
@@ -42,14 +44,12 @@ onMounted(async () => {
   projection = d3.geoAlbersUsa().fitSize([WIDTH, HEIGHT], nation)
   pathGen = d3.geoPath(projection)
 
-  // draw filled nation
   zoomGroup
     .append('path')
     .attr('d', pathGen(nation))
     .attr('stroke', '#ffffff')
     .attr('stroke-width', 0.5)
 
-  // state boundaries
   zoomGroup
     .append('path')
     .datum(topojson.mesh(us, us.objects.states, (a, b) => a !== b))
@@ -58,7 +58,6 @@ onMounted(async () => {
     .attr('stroke', '#ffffff')
     .attr('stroke-width', 0.5)
 
-  // county boundaries
   zoomGroup
     .append('path')
     .datum(
@@ -74,7 +73,6 @@ onMounted(async () => {
     .attr('stroke', '#aaa')
     .attr('stroke-width', 0.25)
 
-  // add zoom behavior
   svg.call(
     d3
       .zoom<SVGSVGElement, unknown>()
@@ -91,7 +89,6 @@ watch(
   async (yr) => {
     if (!zoomGroup || !pathGen) return
 
-    // remove old fire layer
     zoomGroup.selectAll<SVGGElement, unknown>('.fire-layer').remove()
 
     const url = `/json/fires/us_fires_${yr.label ?? '2024'}.topojson`
@@ -105,9 +102,11 @@ watch(
 
     const fires = topojson.feature(topo, topo.objects[`us_fires_${yr.label ?? '2024'}`])
 
+    fireCount.value = fires.features.length
+    totalAcres.value = fires.features.reduce((sum, feat) => sum + (feat.properties?.acres ?? 0), 0)
+
     const fireLayer = zoomGroup.append('g').attr('class', 'fire-layer')
 
-    // fire shapes
     fireLayer
       .selectAll('path')
       .data(fires.features)
@@ -118,7 +117,6 @@ watch(
       .attr('stroke', 'darkred')
       .attr('stroke-width', 0.2)
 
-    // fire dots
     fireLayer
       .selectAll('circle')
       .data(fires.features)
@@ -136,7 +134,6 @@ watch(
 
 <template>
   <div class="min-h-screen flex flex-col">
-    <!-- Navigation Bar -->
     <Menubar class="mt-4 mx-4">
       <template #start>
         <span class="text-xl font-semibold px-4">Wildfire Map</span>
@@ -146,25 +143,31 @@ watch(
           v-model="selectedYear"
           :options="yearOptions"
           optionLabel="label"
-          :defaultValue="selectedYear"
-          :placeholder="String(selectedYear)"
           class="w-32 mx-4"
         />
       </template>
     </Menubar>
 
-    <!-- Map Container -->
     <main class="flex-1 flex flex-col p-4">
-      <Card
-        id="map-container"
-        class="w-full flex-1 rounded-lg shadow overflow-hidden border border-b-neutral-200 max-h-[90vh]"
-      >
-        <template #content>
-          <Suspense>
-            <svg ref="svgRef" viewBox="0 0 975 610"></svg>
-          </Suspense>
-        </template>
-      </Card>
+      <!-- Map & Stats -->
+      <div class="flex gap-4">
+        <Card
+          id="map-container"
+          class="w-full flex-1 rounded-lg shadow overflow-hidden border border-b-neutral-200 max-h-[90vh]"
+        >
+          <template #content>
+            <Suspense>
+              <svg ref="svgRef" viewBox="0 0 975 610"></svg>
+            </Suspense>
+          </template>
+        </Card>
+
+        <!-- Metadata Panel -->
+        <div class="w-64 bg-neutral-100 dark:bg-neutral-900 rounded-lg shadow p-4 text-sm">
+          <p class="text-md">Total Fires: {{ fireCount }}</p>
+          <p class="text-md">Total Acres Burned: {{ totalAcres.toLocaleString() }}</p>
+        </div>
+      </div>
     </main>
   </div>
 </template>
