@@ -1,0 +1,207 @@
+[
+  {
+    "year": 1984,
+    "total_fires": 188,
+    "total_acres": 1239015
+  },
+  {
+    "year": 1985,
+    "total_fires": 417,
+    "total_acres": 3198033
+  },
+  {
+    "year": 1986,
+    "total_fires": 281,
+    "total_acres": 1824537
+  },
+  {
+    "year": 1987,
+    "total_fires": 413,
+    "total_acres": 2290434
+  },
+  {
+    "year": 1988,
+    "total_fires": 400,
+    "total_acres": 4627236
+  },
+  {
+    "year": 1989,
+    "total_fires": 286,
+    "total_acres": 1578144
+  },
+  {
+    "year": 1990,
+    "total_fires": 232,
+    "total_acres": 2596558
+  },
+  {
+    "year": 1991,
+    "total_fires": 288,
+    "total_acres": 1876618
+  },
+  {
+    "year": 1992,
+    "total_fires": 219,
+    "total_acres": 1321623
+  },
+  {
+    "year": 1993,
+    "total_fires": 198,
+    "total_acres": 1366494
+  },
+  {
+    "year": 1994,
+    "total_fires": 505,
+    "total_acres": 3170495
+  },
+  {
+    "year": 1995,
+    "total_fires": 273,
+    "total_acres": 1250883
+  },
+  {
+    "year": 1996,
+    "total_fires": 510,
+    "total_acres": 4854975
+  },
+  {
+    "year": 1997,
+    "total_fires": 151,
+    "total_acres": 597860
+  },
+  {
+    "year": 1998,
+    "total_fires": 305,
+    "total_acres": 1562831
+  },
+  {
+    "year": 1999,
+    "total_fires": 524,
+    "total_acres": 5019053
+  },
+  {
+    "year": 2000,
+    "total_fires": 689,
+    "total_acres": 6228349
+  },
+  {
+    "year": 2001,
+    "total_fires": 430,
+    "total_acres": 2522821
+  },
+  {
+    "year": 2002,
+    "total_fires": 421,
+    "total_acres": 5854253
+  },
+  {
+    "year": 2003,
+    "total_fires": 359,
+    "total_acres": 3466479
+  },
+  {
+    "year": 2004,
+    "total_fires": 282,
+    "total_acres": 7642850
+  },
+  {
+    "year": 2005,
+    "total_fires": 606,
+    "total_acres": 8823746
+  },
+  {
+    "year": 2006,
+    "total_fires": 800,
+    "total_acres": 7621367
+  },
+  {
+    "year": 2007,
+    "total_fires": 553,
+    "total_acres": 7850658
+  },
+  {
+    "year": 2008,
+    "total_fires": 456,
+    "total_acres": 3694091
+  },
+  {
+    "year": 2009,
+    "total_fires": 387,
+    "total_acres": 3624801
+  },
+  {
+    "year": 2010,
+    "total_fires": 315,
+    "total_acres": 2197229
+  },
+  {
+    "year": 2011,
+    "total_fires": 845,
+    "total_acres": 8110864
+  },
+  {
+    "year": 2012,
+    "total_fires": 572,
+    "total_acres": 8375033
+  },
+  {
+    "year": 2013,
+    "total_fires": 302,
+    "total_acres": 3808898
+  },
+  {
+    "year": 2014,
+    "total_fires": 267,
+    "total_acres": 2915431
+  },
+  {
+    "year": 2015,
+    "total_fires": 537,
+    "total_acres": 9073866
+  },
+  {
+    "year": 2016,
+    "total_fires": 517,
+    "total_acres": 4333342
+  },
+  {
+    "year": 2017,
+    "total_fires": 647,
+    "total_acres": 8962070
+  },
+  {
+    "year": 2018,
+    "total_fires": 525,
+    "total_acres": 7406848
+  },
+  {
+    "year": 2019,
+    "total_fires": 380,
+    "total_acres": 4188782
+  },
+  {
+    "year": 2020,
+    "total_fires": 469,
+    "total_acres": 9685030
+  },
+  {
+    "year": 2021,
+    "total_fires": 422,
+    "total_acres": 7070182
+  },
+  {
+    "year": 2022,
+    "total_fires": 530,
+    "total_acres": 6858487
+  },
+  {
+    "year": 2023,
+    "total_fires": 130,
+    "total_acres": 1291045
+  },
+  {
+    "year": 2024,
+    "total_fires": 144,
+    "total_acres": 3306557
+  }
+]
