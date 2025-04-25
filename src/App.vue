@@ -11,11 +11,12 @@ const yearOptions = Array.from({ length: 2024 - 1984 + 1 }, (_, i) => ({
 }))
 const selectedYear = ref<number>(2024)
 const query = ref('')
+const page = ref('map')
 
 // -- Fire metadata ----------------------------------
 const fireCount = ref(0)
 const totalAcres = ref(0)
-const selectedFire = ref<any>(null) // Track the selected fire
+const selectedFire = ref<object | null>(null) // Track the selected fire
 
 // -- SVG ref & common vars --------------------------
 const svgRef = ref<SVGSVGElement | null>(null)
@@ -150,6 +151,16 @@ watch(
         <span class="text-xl font-semibold px-4">Wildfire Map</span>
       </template>
       <template #end>
+        <SelectButton
+          :options="[
+            {
+              label: 'map',
+              value: 'map',
+            },
+            { label: 'charts', value: 'charts' },
+          ]"
+          v-model="page"
+        />
         <InputText v-model="query" placeholder="Find fire" />
         <Select
           v-model="selectedYear"
@@ -194,6 +205,18 @@ watch(
                 selectedFire?.Ig_Date ? new Date(selectedFire.Ig_Date).toLocaleDateString() : 'N/A'
               }}
             </p>
+          </div>
+
+          <div class="mt-6 text-xs text-gray-500 dark:text-gray-400">
+            Data source:
+            <a
+              href="https://mtbs.gov/direct-download"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline hover:text-blue-600"
+            >
+              MTBS Direct Download
+            </a>
           </div>
         </div>
       </div>
