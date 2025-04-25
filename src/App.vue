@@ -15,6 +15,7 @@ const query = ref('')
 // -- Fire metadata ----------------------------------
 const fireCount = ref(0)
 const totalAcres = ref(0)
+const selectedFire = ref<any>(null) // Track the selected fire
 
 // -- SVG ref & common vars --------------------------
 const svgRef = ref<SVGSVGElement | null>(null)
@@ -103,8 +104,6 @@ watch(
 
     const fires = topojson.feature(topo, topo.objects[`us_fires_${yr.label}`])
 
-    console.log(fires)
-
     fireCount.value = fires.features.length
     totalAcres.value = fires.features.reduce(
       (sum, feat) => sum + (feat.properties?.BurnBndAc ?? 0),
@@ -122,6 +121,9 @@ watch(
       .attr('fill-opacity', 0.4)
       .attr('stroke', 'darkred')
       .attr('stroke-width', 0.2)
+      .on('click', (event, d) => {
+        selectedFire.value = d.properties // Set selected fire details
+      })
 
     fireLayer
       .selectAll('circle')
@@ -133,6 +135,9 @@ watch(
       .attr('fill', 'red')
       .attr('stroke', 'white')
       .attr('stroke-width', 0.2)
+      .on('click', (event, d) => {
+        selectedFire.value = d.properties // Set selected fire details
+      })
   },
   { immediate: true },
 )
@@ -175,6 +180,21 @@ watch(
           <p class="text-md">Total Fires: {{ fireCount }}</p>
           <p class="text-md">Total Acres Burned: {{ totalAcres.toLocaleString() }}</p>
           <hr />
+
+          <!-- Fire details -->
+          <div v-if="selectedFire" class="mt-4">
+            <p><strong>Fire Name:</strong> {{ selectedFire?.Incid_Name }}</p>
+            <p>
+              <strong>Acreage Burned:</strong> {{ selectedFire?.BurnBndAc?.toLocaleString() }} acres
+            </p>
+            <p><strong>Comment:</strong> {{ selectedFire?.Comment || 'N/A' }}</p>
+            <p>
+              <strong>Ignition Date:</strong>
+              {{
+                selectedFire?.Ig_Date ? new Date(selectedFire.Ig_Date).toLocaleDateString() : 'N/A'
+              }}
+            </p>
+          </div>
         </div>
       </div>
     </main>
