@@ -1,72 +1,137 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { Card, Select, Menubar } from 'primevue'
 import * as d3 from 'd3'
 import * as topojson from 'topojson-client'
 
-// Year dropdown options
+// -- Year dropdown (1984–2024) ---------------------
 const yearOptions = Array.from({ length: 2024 - 1984 + 1 }, (_, i) => ({
   label: `${1984 + i}`,
   value: 1984 + i,
 }))
-
 const selectedYear = ref<number>(2024)
-const svgRef = ref<SVGSVGElement | null>(null)
 
+// -- SVG ref & common vars --------------------------
+const svgRef = ref<SVGSVGElement | null>(null)
+const WIDTH = 975
+const HEIGHT = 610
+
+// these will be initialized in onMounted
+let projection: d3.GeoProjection
+let pathGen: d3.GeoPath<any, d3.GeoPermissibleObjects>
+let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>
+let zoomGroup: d3.Selection<SVGGElement, unknown, null, undefined>
+
+// -- Draw base map once ----------------------------
 onMounted(async () => {
+  svg = d3
+    .select(svgRef.value!)
+    .attr('viewBox', `0 0 ${WIDTH} ${HEIGHT}`)
+    .attr('width', '100%')
+    .attr('height', '100%')
+    .style('background', '#18181b')
+
+  // group for zoomable content
+  zoomGroup = svg.append('g').attr('class', 'zoom-group')
+
   const us = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json').then((r) =>
     r.json(),
   )
 
-  const svg = d3
-    .select(svgRef.value)
-    .attr('viewBox', '0 0 975 610')
-    .attr('width', 960)
-    .attr('height', 610)
-    .style('display', 'block')
+  const nation = topojson.feature(us, us.objects.nation)
+  projection = d3.geoAlbersUsa().fitSize([WIDTH, HEIGHT], nation)
+  pathGen = d3.geoPath(projection)
 
-  // Keep your Albers projection
-  const projection = d3
-    .geoAlbersUsa()
-    .scale(1280)
-    .translate([975 / 2, 610 / 2])
-
-  const path = d3.geoPath(projection)
-
-  const g = svg
-    .append('g')
-    .attr('fill', 'none')
-    .attr('stroke', '#fff')
-    .attr('stroke-linejoin', 'round')
-    .attr('stroke-linecap', 'round')
-
-  // Counties borders by state
-  g.append('path')
-    .attr('stroke', '#fff')
+  // draw filled nation
+  zoomGroup
+    .append('path')
+    .attr('d', pathGen(nation))
+    .attr('stroke', '#ffffff')
     .attr('stroke-width', 0.5)
-    .attr(
-      'd',
-      path(
-        topojson.mesh(
-          us,
-          us.objects.counties,
-          (a, b) => a !== b && (((a.id as number) / 1000) | 0) === (((b.id as number) / 1000) | 0),
-        ),
+
+  // state boundaries
+  zoomGroup
+    .append('path')
+    .datum(topojson.mesh(us, us.objects.states, (a, b) => a !== b))
+    .attr('d', pathGen)
+    .attr('fill', 'none')
+    .attr('stroke', '#ffffff')
+    .attr('stroke-width', 0.5)
+
+  // county boundaries
+  zoomGroup
+    .append('path')
+    .datum(
+      topojson.mesh(
+        us,
+        us.objects.counties,
+        (a, b) =>
+          a !== b && Math.floor((a.id as number) / 1000) === Math.floor((b.id as number) / 1000),
       ),
     )
+    .attr('d', pathGen)
+    .attr('fill', 'none')
+    .attr('stroke', '#aaa')
+    .attr('stroke-width', 0.25)
 
-  // State borders
-  g.append('path')
-    .attr('stroke', '#fff')
-    .attr('stroke-width', 0.5)
-    .attr('d', path(topojson.mesh(us, us.objects.states, (a, b) => a !== b)))
-
-  // Nation outline
-  g.append('path')
-    .attr('d', path(topojson.feature(us, us.objects.nation)))
-    .attr('stroke', '#fff')
-    .attr('stroke-width', 0.5)
+  // add zoom behavior
+  svg.call(
+    d3
+      .zoom<SVGSVGElement, unknown>()
+      .scaleExtent([1, 8])
+      .on('zoom', (event) => {
+        zoomGroup.attr('transform', event.transform)
+      }),
+  )
 })
+
+// -- Watch for year changes & overlay fires -------
+watch(
+  selectedYear,
+  async (yr) => {
+    if (!zoomGroup || !pathGen) return
+
+    // remove old fire layer
+    zoomGroup.selectAll<SVGGElement, unknown>('.fire-layer').remove()
+
+    const url = `/json/fires/us_fires_${yr.label ?? '2024'}.topojson`
+    let topo
+    try {
+      topo = await fetch(url).then((r) => r.json())
+    } catch {
+      console.error('Failed to load', url)
+      return
+    }
+
+    const fires = topojson.feature(topo, topo.objects[`us_fires_${yr.label ?? '2024'}`])
+
+    const fireLayer = zoomGroup.append('g').attr('class', 'fire-layer')
+
+    // fire shapes
+    fireLayer
+      .selectAll('path')
+      .data(fires.features)
+      .join('path')
+      .attr('d', pathGen)
+      .attr('fill', 'red')
+      .attr('fill-opacity', 0.4)
+      .attr('stroke', 'darkred')
+      .attr('stroke-width', 0.2)
+
+    // fire dots
+    fireLayer
+      .selectAll('circle')
+      .data(fires.features)
+      .join('circle')
+      .attr('cx', (d) => pathGen.centroid(d)[0])
+      .attr('cy', (d) => pathGen.centroid(d)[1])
+      .attr('r', 0.5)
+      .attr('fill', 'red')
+      .attr('stroke', 'white')
+      .attr('stroke-width', 0.2)
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -92,7 +157,7 @@ onMounted(async () => {
     <main class="flex-1 flex flex-col p-4">
       <Card
         id="map-container"
-        class="w-full flex-1 rounded-lg shadow overflow-hidden border border-b-neutral-200"
+        class="w-full flex-1 rounded-lg shadow overflow-hidden border border-b-neutral-200 max-h-[90vh]"
       >
         <template #content>
           <Suspense>
