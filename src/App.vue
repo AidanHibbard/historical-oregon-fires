@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { Card, Select, Menubar, InputText } from 'primevue'
+import { Card, Select, Menubar } from 'primevue'
 import * as d3 from 'd3'
 import * as topojson from 'topojson-client'
+import DataCharts from './components/DataCharts.vue'
 
 // -- Year dropdown (1984–2024) ---------------------
 const yearOptions = Array.from({ length: 2024 - 1984 + 1 }, (_, i) => ({
@@ -10,8 +11,6 @@ const yearOptions = Array.from({ length: 2024 - 1984 + 1 }, (_, i) => ({
   value: 1984 + i,
 }))
 const selectedYear = ref<number>(2024)
-const query = ref('')
-const page = ref('map')
 
 // -- Fire metadata ----------------------------------
 const fireCount = ref(0)
@@ -151,17 +150,6 @@ watch(
         <span class="text-xl font-semibold px-4">Wildfire Map</span>
       </template>
       <template #end>
-        <SelectButton
-          :options="[
-            {
-              label: 'map',
-              value: 'map',
-            },
-            { label: 'charts', value: 'charts' },
-          ]"
-          v-model="page"
-        />
-        <InputText v-model="query" placeholder="Find fire" />
         <Select
           v-model="selectedYear"
           :options="yearOptions"
@@ -220,6 +208,7 @@ watch(
           </div>
         </div>
       </div>
+      <DataCharts />
     </main>
   </div>
 </template>
